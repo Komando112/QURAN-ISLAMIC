@@ -48,11 +48,10 @@
             }
         }
     </script>
-    
-    <!-- Font Awesome -->
+    <link rel="stylesheet" href="style.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
@@ -76,7 +75,6 @@
             color: #1f2937;
         }
         
-        /* تخصيص شريط التمرير */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -96,7 +94,6 @@
             background: #64748b;
         }
         
-        /* النصوص القرآنية */
         .ayah-text {
             font-family: 'Amiri', serif;
             line-height: 2.5;
@@ -111,7 +108,6 @@
             font-weight: bold;
         }
         
-        /* الكروت */
         .card {
             background: white;
             border-radius: 1.25rem;
@@ -126,7 +122,6 @@
             border-color: rgba(5, 150, 105, 0.2);
         }
         
-        /* الأزرار */
         .btn-primary {
             background: linear-gradient(135deg, var(--quran-primary) 0%, var(--quran-primary) 100%);
             color: white;
@@ -143,7 +138,6 @@
             transform: translateY(0);
         }
         
-        /* شريط الصوت */
         audio {
             width: 100%;
             border-radius: 12px;
@@ -159,7 +153,6 @@
             border-radius: 50%;
         }
         
-        /* الأيقونات */
         .icon-circle {
             width: 48px;
             height: 48px;
@@ -171,7 +164,6 @@
             color: var(--quran-primary);
         }
         
-        /* التحميل */
         .loading-spinner {
             width: 60px;
             height: 60px;
@@ -185,7 +177,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* التأثيرات */
         .glow-border {
             position: relative;
         }
@@ -208,7 +199,6 @@
             opacity: 0.3;
         }
         
-        /* التجاوب */
         @media (max-width: 768px) {
             .ayah-text {
                 font-size: 1.7rem;
@@ -242,12 +232,10 @@
             }
         }
         
-        /* الظلال النصية */
         .text-shadow {
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        /* تدرجات الخلفيات */
         .bg-gradient-header {
             background: linear-gradient(135deg, var(--quran-primary) 0%, #10b981 100%);
         }
@@ -264,17 +252,14 @@
             background: linear-gradient(135deg, #f3e8ff 0%, #c4b5fd 100%);
         }
         
-        /* التنقل الناعم */
         .smooth-transition {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* حاوية النتائج */
         .results-container {
             animation: fadeIn 0.6s ease-out;
         }
         
-        /* تنبيهات */
         .toast {
             animation: slideUp 0.3s ease-out;
         }
@@ -282,11 +267,9 @@
 </head>
 <body class="min-h-screen">
     
-    <!-- Header -->
     <header class="bg-gradient-header text-white shadow-xl">
         <div class="container mx-auto px-4 py-5">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <!-- Logo Section -->
                 <div class="flex items-center gap-4">
                     <div class="icon-circle animate-pulse-glow">
                         <i class="fas fa-book-quran text-2xl"></i>
@@ -300,8 +283,7 @@
                         </p>
                     </div>
                 </div>
-                
-                <!-- Stats -->
+
                 <div class="flex items-center gap-4 bg-white/10 px-4 py-3 rounded-2xl backdrop-blur-sm">
                     <div class="text-center">
                         <div class="text-lg font-bold">١١٤</div>
@@ -322,13 +304,10 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container mx-auto px-4 py-6 max-w-6xl">
         
-        <!-- Search Section -->
         <div class="card p-6 mb-8 glow-border">
             <div class="max-w-4xl mx-auto">
-                <!-- Title -->
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">
                         <i class="fas fa-search text-quran-primary ml-2"></i>
@@ -337,9 +316,7 @@
                     <p class="text-gray-600">اختر السورة والآية للاستماع والتفسير</p>
                 </div>
                 
-                <!-- Search Options -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-                    <!-- Select Surah -->
                     <div>
                         <label class="block text-gray-700 mb-2 font-medium">
                             <i class="fas fa-book-open ml-1 text-quran-primary"></i>
@@ -351,7 +328,6 @@
                                 class="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-primary focus:border-quran-primary outline-none transition appearance-none bg-white smooth-transition"
                             >
                                 <option value="">-- اختر السورة --</option>
-                                <!-- سيتم ملؤها جافاسكريبت -->
                             </select>
                             <div class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                                 <i class="fas fa-chevron-down text-gray-400"></i>
@@ -360,7 +336,6 @@
                         <div id="surahInfo" class="mt-2 text-sm text-gray-500 hidden"></div>
                     </div>
                     
-                    <!-- Ayah Number in Surah -->
                     <div>
                         <label class="block text-gray-700 mb-2 font-medium">
                             <i class="fas fa-hashtag ml-1 text-quran-secondary"></i>
@@ -383,7 +358,6 @@
                         </div>
                     </div>
                     
-                    <!-- Select Reciter -->
                     <div>
                         <label class="block text-gray-700 mb-2 font-medium">
                             <i class="fas fa-user-circle ml-1 text-quran-accent"></i>
@@ -394,7 +368,6 @@
                                 id="reciterSelect"
                                 class="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-accent focus:border-quran-accent outline-none transition appearance-none bg-white smooth-transition"
                             >
-                                <!-- سيتم ملؤها جافاسكريبت -->
                             </select>
                             <div class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                                 <i class="fas fa-chevron-down text-gray-400"></i>
@@ -403,7 +376,6 @@
                     </div>
                 </div>
                 
-                <!-- Global Ayah Search (Backup) -->
                 <div class="mb-6">
                     <label class="block text-gray-700 mb-2 font-medium">
                         <i class="fas fa-globe ml-1 text-quran-gold"></i>
@@ -432,7 +404,6 @@
                     </div>
                 </div>
                 
-                <!-- Quick Ayahs -->
                 <div class="mb-6">
                     <label class="block text-gray-700 mb-3 font-medium">
                         <i class="fas fa-bolt ml-1 text-red-500"></i>
@@ -458,7 +429,6 @@
                     </div>
                 </div>
                 
-                <!-- Search Button -->
                 <div class="text-center">
                     <button 
                         id="searchBtn"
@@ -477,7 +447,6 @@
                     </p>
                 </div>
                 
-                <!-- Error Message -->
                 <div id="errorMsg" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
                     <div class="flex items-center gap-3 text-red-700">
                         <i class="fas fa-exclamation-triangle text-lg"></i>
@@ -490,15 +459,12 @@
             </div>
         </div>
 
-        <!-- Results Section -->
         <div id="resultsSection" class="space-y-6 hidden results-container">
             
-            <!-- Ayah Card -->
             <div id="ayahCard" class="card p-6 md:p-8 slide-up">
                 <div id="ayahDisplay"></div>
             </div>
 
-            <!-- Audio Card -->
             <div id="audioCard" class="card bg-gradient-audio p-5 md:p-6 slide-up">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
                     <div class="flex items-center gap-3">
@@ -522,9 +488,7 @@
                 <div id="audioDisplay"></div>
             </div>
 
-            <!-- Translation & Tafseer Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Translation Card -->
                 <div id="translationCard" class="card bg-gradient-translation p-5 md:p-6 slide-up">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="icon-circle bg-blue-100 text-blue-600">
@@ -538,7 +502,6 @@
                     <div id="translationDisplay"></div>
                 </div>
 
-                <!-- Tafseer Card -->
                 <div id="tafseerCard" class="card bg-gradient-tafseer p-5 md:p-6 slide-up">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="icon-circle bg-purple-100 text-purple-600">
@@ -553,9 +516,7 @@
                 </div>
             </div>
 
-            <!-- Share & Navigation -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Share Card -->
                 <div id="shareCard" class="card p-5 slide-up hidden">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -580,7 +541,6 @@
                     </div>
                 </div>
 
-                <!-- Navigation Card -->
                 <div id="navigationCard" class="card p-5 slide-up hidden">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -607,7 +567,6 @@
             </div>
         </div>
 
-        <!-- Loading State -->
         <div id="loadingState" class="hidden text-center py-16">
             <div class="loading-spinner mx-auto mb-6"></div>
             <p class="text-gray-700 font-bold text-lg mb-2">جاري تحميل الآية</p>
@@ -620,11 +579,9 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 mt-12">
         <div class="container mx-auto px-4 py-8">
             <div class="text-center">
-                <!-- دعاء -->
                 <div class="mb-6">
                     <div class="inline-flex items-center gap-3 bg-emerald-50 px-6 py-4 rounded-2xl">
                         <i class="fas fa-hands-praying text-emerald-600 text-xl"></i>
@@ -634,14 +591,12 @@
                     </div>
                 </div>
                 
-                <!-- Links -->
                 <div class="flex flex-wrap justify-center gap-6 mb-6">
-                    <a href="#" class="text-gray-600 hover:text-quran-primary transition smooth-transition">
-                        <i class="fas fa-heart ml-1"></i> تبرع للموقع
+                    <a href="javascript:void(0)" onclick="showDonationModal()" class="text-gray-600 hover:text-quran-primary transition smooth-transition donation-btn font-bold text-quran-primary">
+                        <i class="fas fa-heart ml-1 text-red-500"></i> تبرع ودعم الموقع
                     </a>
                 </div>
                 
-                <!-- Copyright -->
                 <div class="border-t border-gray-100 pt-6">
                     <p class="text-gray-500 text-sm">
                         <i class="fas fa-copyright ml-1"></i>
@@ -659,7 +614,139 @@
         </div>
     </footer>
 
-    <!-- JavaScript Files -->
+    <div id="donationModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-black bg-opacity-40 backdrop-blur-sm" onclick="hideDonationModal()"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="icon-circle bg-white/20 text-white">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">تبرع ودعم الموقع</h3>
+                                <p class="text-emerald-100 text-sm">ادعم استمرارية القرآن الكريم</p>
+                            </div>
+                        </div>
+                        <button onclick="hideDonationModal()" class="text-white hover:text-emerald-200 text-xl">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-6 bg-gradient-to-br from-emerald-50 to-white">
+                    <div class="mb-6 text-center">
+                        <div class="inline-block bg-emerald-100 px-4 py-2 rounded-full mb-3">
+                            <i class="fas fa-quote-right text-emerald-600 ml-1"></i>
+                            <span class="text-emerald-700 font-bold">آية قرآنية</span>
+                        </div>
+                        <p class="ayah-text text-gray-800 mb-4 text-xl">
+                            مَّن ذَا ٱلَّذِى يُقْرِضُ ٱللَّهَ قَرْضًا حَسَنًۭا فَيُضَٰعِفَهُۥ لَهُۥٓ أَضْعَافًۭا كَثِيرَةًۭ
+                        </p>
+                        <p class="text-gray-600 text-sm">
+                            البقرة (٢٤٥)
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white border border-emerald-200 rounded-xl p-5 mb-6">
+                        <div class="flex items-start gap-4">
+                            <div class="icon-circle bg-amber-100 text-amber-600 flex-shrink-0">
+                                <i class="fas fa-hands-helping"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-2">كيف يساهم تبرعك؟</h4>
+                                <ul class="space-y-2 text-gray-600 text-sm">
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span>تحسين جودة التلاوات واستمراريتها</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span>إضافة قراء جدد وتلاوات متنوعة</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span>تطوير الموقع وإضافة مميزات جديدة</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span>تغطية تكاليف السيرفر والصيانة</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-book-open text-emerald-600 text-lg"></i>
+                            <p class="text-emerald-700 text-sm italic">
+                                "قال رسول الله ﷺ: <strong>دعوة المظلوم مستجابة</strong>، فإن تجاوزت فسوف يأتي الله لك بفرج من حيث لا تحتسب"
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 donation-info-item">
+                        <h4 class="font-bold text-emerald-800 mb-3 text-center">
+                            <i class="fas fa-wallet ml-2"></i>معلومات الدفع
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="bg-white p-3 rounded-lg border border-emerald-100 donation-info-item">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-700 font-medium">Etisalat Cash</span>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg font-bold text-lg payment-number">01116648302</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-emerald-100 donation-info-item">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-700 font-medium">instaPay</span>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm payment-number">darkelmasry@instapay.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-gray-500 text-xs mb-6">
+                        <p>هذا الموقع غير ربحي، والتبرعات مخصصة لخدمة كتاب الله فقط</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-3">
+                        <button onclick="copyDonationInfo()" 
+                                class="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-2 donation-btn">
+                            <i class="fas fa-copy"></i>
+                            نسخ معلومات التبرع
+                        </button>
+                        
+                        <button onclick="hideDonationModal()" 
+                                class="p-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
+                            <i class="fas fa-times ml-1"></i>
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <div class="flex items-center justify-center gap-2 text-gray-500 text-sm">
+                        <i class="fas fa-hands-praying"></i>
+                        <span>جزاك الله خيراً وبارك في مالك</span>
+                        <i class="fas fa-hands-praying"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
     <script src="main.js"></script>
     

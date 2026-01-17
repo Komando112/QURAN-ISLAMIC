@@ -1,10 +1,3 @@
-/**
- * القرآن الكريم - النسخة المحسنة
- * مع اختيار السورة والآية
- * إصدار 3.0.0
- */
-
-// تهيئة المتغيرات العالمية
 let currentReciter = 'minshawi';
 let currentSurah = null;
 let currentAyah = 1;
@@ -13,23 +6,17 @@ let audioElement = null;
 let surahsList = [];
 let currentGlobalAyah = null;
 
-// تهيئة التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('📱 تهيئة تطبيق القرآن الكريم...');
     
-    // تعيين القارئ الافتراضي
     currentReciter = 'minshawi';
     
-    // تحميل السور
     await loadSurahs();
     
-    // تحميل القراء
     loadReciters();
     
-    // إعداد مستمعي الأحداث
     setupEventListeners();
     
-    // تحميل الفاتحة افتراضياً
     setTimeout(() => {
         loadQuickAyah(1, 1);
     }, 1000);
@@ -37,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('✅ التطبيق جاهز للاستخدام');
 });
 
-// تحميل قائمة السور
 async function loadSurahs() {
     showToast('جاري تحميل قائمة السور...', 'info');
     
@@ -53,12 +39,10 @@ async function loadSurahs() {
     } catch (error) {
         console.error('خطأ في تحميل السور:', error);
         showToast('تعذر تحميل السور، يرجى التحقق من الاتصال بالإنترنت', 'error');
-        // لا نستخدم بيانات افتراضية
         surahsList = [];
     }
 }
 
-// ملء قائمة اختيار السور
 function populateSurahSelect() {
     const surahSelect = document.getElementById('surahSelect');
     surahSelect.innerHTML = '<option value="">-- اختر السورة --</option>';
@@ -79,7 +63,6 @@ function populateSurahSelect() {
         surahSelect.appendChild(option);
     });
     
-    // إضافة حدث التغيير
     surahSelect.addEventListener('change', function() {
         const surahNumber = parseInt(this.value);
         if (surahNumber) {
@@ -93,7 +76,6 @@ function populateSurahSelect() {
     });
 }
 
-// تحديث معلومات السورة
 function updateSurahInfo(surahNumber) {
     const surah = surahsList.find(s => s.number === surahNumber);
     if (!surah) return;
@@ -109,11 +91,9 @@ function updateSurahInfo(surahNumber) {
     `;
     surahInfo.classList.remove('hidden');
     
-    // تحديث المدى
     updateAyahRange(surahNumber);
 }
 
-// تحديث مدى الآيات
 function updateAyahRange(surahNumber) {
     const surah = surahsList.find(s => s.number === surahNumber);
     if (!surah) return;
@@ -125,13 +105,11 @@ function updateAyahRange(surahNumber) {
     ayahRange.classList.remove('hidden');
 }
 
-// إخفاء معلومات السورة
 function hideSurahInfo() {
     document.getElementById('surahInfo').classList.add('hidden');
     document.getElementById('ayahRange').classList.add('hidden');
 }
 
-// تحميل القراء في القائمة
 function loadReciters() {
     const reciterSelect = document.getElementById('reciterSelect');
     reciterSelect.innerHTML = '';
@@ -143,65 +121,140 @@ function loadReciters() {
         reciterSelect.appendChild(option);
     });
     
-    // تعيين القارئ الافتراضي
     reciterSelect.value = currentReciter;
     
-    // إضافة حدث التغيير
     reciterSelect.addEventListener('change', function() {
         currentReciter = this.value;
         
-        // إذا كانت هناك آية معروضة، أعد تحميل الصوت
         if (currentAyahData) {
             loadAudio(currentAyahData);
         }
     });
 }
 
-// إعداد مستمعي الأحداث
 function setupEventListeners() {
-    // البحث عند الضغط على Enter في حقل الآية في السورة
     document.getElementById('ayahInSurah').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             fetchAyahBySurah();
         }
     });
     
-    // البحث عند الضغط على Enter في حقل الآية العام
     document.getElementById('globalAyah').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             searchByGlobalAyah();
         }
     });
     
-    // إخفاء رسالة الخطأ عند الكتابة
     document.getElementById('ayahInSurah').addEventListener('input', hideError);
     document.getElementById('globalAyah').addEventListener('input', hideError);
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        #donationModal .sm\\:align-middle {
+            transition: all 0.3s ease-out;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        
+        #donationModal .sm\\:align-middle.scale-100 {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .donation-btn:hover {
+            animation: pulseGlow 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    const donationModalStyle = document.createElement('style');
+    donationModalStyle.textContent = `
+        .donation-info-item {
+            transition: all 0.3s ease;
+        }
+        
+        .donation-info-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+        }
+        
+        .payment-number {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            direction: ltr;
+            text-align: left;
+            display: inline-block;
+            min-width: 150px;
+        }
+        
+        .donation-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .donation-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .donation-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(40, 40);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(donationModalStyle);
 }
 
-// تنسيق أرقام السورة والآية إلى 3 خانات
 function formatSurahAyahNumbers(surahNumber, ayahNumber) {
-    // تنسيق الأرقام إلى 3 خانات مع صفر في البداية
     const surah = surahNumber.toString().padStart(3, '0');
     const ayah = ayahNumber.toString().padStart(3, '0');
     return { surah, ayah };
 }
 
-// تحميل آية سريعة
 function loadQuickAyah(surah, ayah) {
     document.getElementById('surahSelect').value = surah;
     document.getElementById('ayahInSurah').value = ayah;
     
-    // تحديث معلومات السورة
     updateSurahInfo(surah);
     updateAyahRange(surah);
     
-    // البحث بعد تأخير بسيط
     setTimeout(() => {
         fetchAyahBySurah();
     }, 300);
 }
 
-// البحث بالسورة والآية
 async function fetchAyahBySurah() {
     const surahSelect = document.getElementById('surahSelect');
     const ayahInput = document.getElementById('ayahInSurah');
@@ -209,7 +262,6 @@ async function fetchAyahBySurah() {
     const surahNumber = parseInt(surahSelect.value);
     const ayahNumber = parseInt(ayahInput.value);
     
-    // التحقق من صحة المدخلات
     if (!surahNumber) {
         showError(QuranConfig.messages.selectSurah);
         return;
@@ -229,23 +281,18 @@ async function fetchAyahBySurah() {
     currentSurah = surahNumber;
     currentAyah = ayahNumber;
     
-    // إظهار حالة التحميل
     showLoading(true);
     
     try {
-        // جلب بيانات الآية
         const ayahData = await getAyahBySurahNumber(surahNumber, ayahNumber);
         
-        // عرض البيانات
         displayAyah(ayahData);
         await loadAudio(ayahData);
         await loadTranslation(ayahData.number);
         await loadTafseer(ayahData.number);
         
-        // إظهار الأقسام الإضافية
         showAdditionalSections();
         
-        // حفظ البيانات الحالية
         currentAyahData = ayahData;
         currentGlobalAyah = ayahData.number;
         
@@ -257,42 +304,33 @@ async function fetchAyahBySurah() {
     }
 }
 
-// البحث بالرقم العام للآية
 async function searchByGlobalAyah() {
     const globalAyahInput = document.getElementById('globalAyah');
     const ayahNumber = parseInt(globalAyahInput.value.trim());
     
-    // التحقق من صحة الرقم
     if (!ayahNumber || ayahNumber < 1 || ayahNumber > QuranConfig.totalAyahs) {
         showError(QuranConfig.messages.invalidAyah, `يجب أن يكون بين 1 و ${QuranConfig.totalAyahs}`);
         return;
     }
     
-    // إظهار حالة التحميل
     showLoading(true);
     
     try {
-        // جلب بيانات الآية
         const ayahData = await getAyahData(ayahNumber);
         
-        // تحديث حقول السورة والآية
         document.getElementById('surahSelect').value = ayahData.surah.number;
         document.getElementById('ayahInSurah').value = ayahData.numberInSurah;
         
-        // تحديث معلومات السورة
         updateSurahInfo(ayahData.surah.number);
         updateAyahRange(ayahData.surah.number);
         
-        // عرض البيانات
         displayAyah(ayahData);
         await loadAudio(ayahData);
         await loadTranslation(ayahNumber);
         await loadTafseer(ayahNumber);
         
-        // إظهار الأقسام الإضافية
         showAdditionalSections();
         
-        // حفظ البيانات الحالية
         currentAyahData = ayahData;
         currentSurah = ayahData.surah.number;
         currentAyah = ayahData.numberInSurah;
@@ -306,7 +344,6 @@ async function searchByGlobalAyah() {
     }
 }
 
-// جلب بيانات الآية برقمها العام
 async function getAyahData(ayahNumber) {
     try {
         const response = await fetch(QuranConfig.apis.ayah(ayahNumber));
@@ -328,7 +365,6 @@ async function getAyahData(ayahNumber) {
     }
 }
 
-// جلب بيانات الآية من سورة معينة
 async function getAyahBySurahNumber(surahNumber, ayahNumber) {
     try {
         const response = await fetch(QuranConfig.apis.ayahBySurah(surahNumber, ayahNumber));
@@ -350,7 +386,6 @@ async function getAyahBySurahNumber(surahNumber, ayahNumber) {
     }
 }
 
-// عرض بيانات الآية
 function displayAyah(ayahData) {
     const display = document.getElementById('ayahDisplay');
     const surah = surahsList.find(s => s.number === ayahData.surah.number);
@@ -408,25 +443,20 @@ function displayAyah(ayahData) {
     document.getElementById('ayahCard').classList.add('slide-up');
 }
 
-// تحميل التلاوة الصوتية
 async function loadAudio(ayahData) {
     const audioDisplay = document.getElementById('audioDisplay');
     const reciter = QuranConfig.reciters[currentReciter];
     
-    // تحديث اسم القارئ
     document.getElementById('reciterName').textContent = `تلاوة ${reciter.name}`;
     
-    // تنسيق أرقام السورة والآية باستخدام الدالة المساعدة
     const { surah, ayah } = formatSurahAyahNumbers(ayahData.surah.number, ayahData.numberInSurah);
     
     let audioUrl = null;
     
-    // تجربة كل مصدر حتى نجاح واحد
     for (const sourceFunc of reciter.sources) {
         const url = sourceFunc(surah, ayah);
         
         try {
-            // اختبار إذا كان الملف موجوداً
             console.log(`🔍 جاري اختبار: ${url}`);
             const response = await fetch(url, { method: 'HEAD' });
             
@@ -437,7 +467,6 @@ async function loadAudio(ayahData) {
             }
         } catch (error) {
             console.log(`❌ فشل تحميل: ${url}`, error);
-            // تجربة المصدر التالي
             continue;
         }
     }
@@ -466,10 +495,8 @@ async function loadAudio(ayahData) {
         
         document.getElementById('audioCard').classList.remove('hidden');
         
-        // حفظ المرجع للعنصر الصوتي
         audioElement = document.getElementById('ayahAudio');
         
-        // إضافة مستمع للأخطاء
         audioElement.addEventListener('error', function() {
             showToast('تعذر تحميل التلاوة، جاري البحث عن مصدر بديل', 'warning');
             setTimeout(() => tryAlternativeAudio(surah, ayah), 1000);
@@ -495,7 +522,6 @@ async function loadAudio(ayahData) {
     }
 }
 
-// تجربة قارئ بديل
 async function tryAlternativeAudio(surah, ayah) {
     const reciters = Object.values(QuranConfig.reciters);
     let success = false;
@@ -509,11 +535,9 @@ async function tryAlternativeAudio(surah, ayah) {
             try {
                 const response = await fetch(url, { method: 'HEAD' });
                 if (response.ok) {
-                    // تغيير القارئ الحالي
                     currentReciter = reciter.id;
                     document.getElementById('reciterSelect').value = currentReciter;
-                    
-                    // إعادة تحميل الصوت
+
                     if (currentAyahData) {
                         loadAudio(currentAyahData);
                     }
@@ -533,7 +557,6 @@ async function tryAlternativeAudio(surah, ayah) {
     }
 }
 
-// جلب الترجمة
 async function loadTranslation(ayahNumber) {
     try {
         const response = await fetch(QuranConfig.apis.translation(ayahNumber, 'en.asad'));
@@ -560,7 +583,6 @@ async function loadTranslation(ayahNumber) {
     }
 }
 
-// جلب التفسير
 async function loadTafseer(ayahNumber) {
     try {
         const response = await fetch(QuranConfig.apis.tafseer(ayahNumber, 'ar.muyassar'));
@@ -587,21 +609,18 @@ async function loadTafseer(ayahNumber) {
     }
 }
 
-// إظهار الأقسام الإضافية
 function showAdditionalSections() {
     document.getElementById('resultsSection').classList.remove('hidden');
     document.getElementById('shareCard').classList.remove('hidden');
     document.getElementById('navigationCard').classList.remove('hidden');
 }
 
-// التنقل بين الآيات
 function previousAyah() {
     if (!currentSurah || !currentAyah) return;
     
     if (currentAyah > 1) {
         loadQuickAyah(currentSurah, currentAyah - 1);
     } else if (currentSurah > 1) {
-        // الانتقال إلى السورة السابقة
         const prevSurah = currentSurah - 1;
         const surah = surahsList.find(s => s.number === prevSurah);
         if (surah) {
@@ -619,12 +638,10 @@ function nextAyah() {
     if (currentAyah < surah.numberOfAyahs) {
         loadQuickAyah(currentSurah, currentAyah + 1);
     } else if (currentSurah < 114) {
-        // الانتقال إلى السورة التالية
         loadQuickAyah(currentSurah + 1, 1);
     }
 }
 
-// التحكم بالصوت
 function playAudio() {
     if (audioElement) {
         audioElement.play().catch(error => {
@@ -650,7 +667,6 @@ function downloadAudio() {
     }
 }
 
-// مشاركة الآية
 async function shareAyah() {
     if (!currentAyahData) return;
     
@@ -697,7 +713,64 @@ function copyAyah() {
         });
 }
 
-// وظائف مساعدة
+function showDonationModal() {
+    const modal = document.getElementById('donationModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+        modal.querySelector('.sm\\:align-middle').classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function hideDonationModal() {
+    const modal = document.getElementById('donationModal');
+    const content = modal.querySelector('.sm\\:align-middle');
+    
+    content.classList.remove('scale-100', 'opacity-100');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function copyDonationInfo() {
+    const donationInfo = `تبرع ودعم موقع قرآن كريم
+
+معلومات الدفع:
+• فودافون كاش: 01116648302
+• PayPal: darkelmasry@instapay.com
+
+"من ذا الذي يقرض الله قرضاً حسناً فيضاعفه له أضعافاً كثيرة"
+البقرة (245)
+
+كل التبرعات مخصصة لخدمة كتاب الله فقط.
+نسأل الله أن يجعلها في ميزان حسناتكم.`.trim();
+    
+    navigator.clipboard.writeText(donationInfo)
+        .then(() => {
+            showToast('تم نسخ معلومات التبرع إلى الحافظة ✅', 'success');
+            
+            const copyBtn = document.querySelector('button[onclick="copyDonationInfo()"]');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> تم النسخ بنجاح!';
+            copyBtn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+            copyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            copyBtn.disabled = true;
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                copyBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+                copyBtn.disabled = false;
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('فشل النسخ:', err);
+            showToast('تعذر نسخ المعلومات ❌', 'error');
+        });
+}
+
 function showLoading(show) {
     const loadingState = document.getElementById('loadingState');
     const resultsSection = document.getElementById('resultsSection');
@@ -725,7 +798,6 @@ function showError(message, details = '') {
     errorDetails.textContent = details;
     errorMsg.classList.remove('hidden');
     
-    // إخفاء الرسالة تلقائياً بعد 5 ثوان
     setTimeout(() => {
         hideError();
     }, 5000);
@@ -736,13 +808,11 @@ function hideError() {
 }
 
 function showToast(message, type = 'info') {
-    // إزالة أي toast موجود
     const existingToast = document.querySelector('.toast-message');
     if (existingToast) {
         existingToast.remove();
     }
     
-    // إنشاء toast جديد
     const toast = document.createElement('div');
     toast.className = `toast-message fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg text-white z-50 transition-all duration-300 flex items-center gap-3 ${
         type === 'success' ? 'bg-emerald-500' : 
@@ -757,7 +827,6 @@ function showToast(message, type = 'info') {
     
     document.body.appendChild(toast);
     
-    // إزالة toast بعد 3 ثوان
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translate(-50%, -20px)';
@@ -769,13 +838,11 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// الحصول على عدد آيات السورة
 function getSurahAyahCount(surahNumber) {
     const surah = surahsList.find(s => s.number === surahNumber);
     return surah ? surah.numberOfAyahs : 0;
 }
 
-// جعل الدوال متاحة عالمياً
 window.loadQuickAyah = loadQuickAyah;
 window.playAudio = playAudio;
 window.pauseAudio = pauseAudio;
@@ -787,3 +854,6 @@ window.searchByGlobalAyah = searchByGlobalAyah;
 window.previousAyah = previousAyah;
 window.nextAyah = nextAyah;
 window.tryAlternativeAudio = tryAlternativeAudio;
+window.showDonationModal = showDonationModal;
+window.hideDonationModal = hideDonationModal;
+window.copyDonationInfo = copyDonationInfo;
