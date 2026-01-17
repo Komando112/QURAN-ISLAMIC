@@ -74,8 +74,8 @@ alafasy: {
 albanna: {
   id: "albanna",
   name: "محمود علي البنا",
-  style: "مجود",
-  type: "tajweed",
+  style: "مرتل",
+  type: "murattal",
   color: "bg-gradient-to-r from-green-500 to-green-600",
   sources: [
     (surah, ayah) =>
@@ -90,8 +90,8 @@ albanna: {
 husary: {
   id: "husary",
   name: "محمود خليل الحصري",
-  style: "مجود",
-  type: "tajweed",
+  style: "مرتل",
+  type: "murattal",
   color: "bg-gradient-to-r from-blue-500 to-blue-600",
   sources: [
     (surah, ayah) =>
