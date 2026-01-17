@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#059669">
+    <meta name="description" content="موقع قرآن كريم - تلاوات متنوعة مع تفسير وترجمة">
+    <title></title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        quran: {
+                            primary: '#059669',
+                            dark: '#047857',
+                            light: '#10b981',
+                            green: '#34d399',
+                            teal: '#2dd4bf'
+                        }
+                    },
+                    fontFamily: {
+                        'arabic': ['Amiri', 'serif'],
+                        'tajawal': ['Tajawal', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(5, 150, 105, 0.3)' },
+                            '50%': { boxShadow: '0 0 30px rgba(5, 150, 105, 0.5)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --quran-primary: #059669;
+            --quran-secondary: #0ea5e9;
+            --quran-accent: #8b5cf6;
+            --quran-gold: #f59e0b;
+        }
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f8fafc 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+        
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* النصوص القرآنية */
+        .ayah-text {
+            font-family: 'Amiri', serif;
+            line-height: 2.5;
+            font-size: 1.9rem;
+            color: #1e293b;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .ayah-number {
+            font-family: 'Amiri', serif;
+            color: var(--quran-primary);
+            font-weight: bold;
+        }
+        
+        /* الكروت */
+        .card {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(5, 150, 105, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 30px rgba(5, 150, 105, 0.1);
+            transform: translateY(-3px);
+            border-color: rgba(5, 150, 105, 0.2);
+        }
+        
+        /* الأزرار */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--quran-primary) 0%, var(--quran-primary) 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #047857 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        /* شريط الصوت */
+        audio {
+            width: 100%;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        
+        audio::-webkit-media-controls-panel {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e2e8f0 100%);
+        }
+        
+        audio::-webkit-media-controls-play-button {
+            background-color: var(--quran-primary);
+            border-radius: 50%;
+        }
+        
+        /* الأيقونات */
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            color: var(--quran-primary);
+        }
+        
+        /* التحميل */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e5e7eb;
+            border-top-color: var(--quran-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* التأثيرات */
+        .glow-border {
+            position: relative;
+        }
+        
+        .glow-border::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: inherit;
+            background: linear-gradient(45deg, var(--quran-primary), var(--quran-secondary), var(--quran-accent));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .glow-border:hover::after {
+            opacity: 0.3;
+        }
+        
+        /* التجاوب */
+        @media (max-width: 768px) {
+            .ayah-text {
+                font-size: 1.7rem;
+                line-height: 2.2;
+            }
+            
+            .card {
+                border-radius: 1rem;
+                margin: 0 -0.5rem;
+            }
+            
+            .icon-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ayah-text {
+                font-size: 1.6rem;
+                line-height: 2;
+            }
+            
+            .card {
+                border-radius: 0.75rem;
+            }
+            
+            audio {
+                height: 48px;
+            }
+        }
+        
+        /* الظلال النصية */
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* تدرجات الخلفيات */
+        .bg-gradient-header {
+            background: linear-gradient(135deg, var(--quran-primary) 0%, #10b981 100%);
+        }
+        
+        .bg-gradient-audio {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .bg-gradient-translation {
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+        }
+        
+        .bg-gradient-tafseer {
+            background: linear-gradient(135deg, #f3e8ff 0%, #c4b5fd 100%);
+        }
+        
+        /* التنقل الناعم */
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* حاوية النتائج */
+        .results-container {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        /* تنبيهات */
+        .toast {
+            animation: slideUp 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-gradient-header text-white shadow-xl">
+        <div class="container mx-auto px-4 py-5">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Logo Section -->
+                <div class="flex items-center gap-4">
+                    <div class="icon-circle animate-pulse-glow">
+                        <i class="fas fa-book-quran text-2xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <h1 class="text-2xl md:text-3xl font-bold text-white text-shadow">
+                            قرآن كريم
+                        </h1>
+                        <p class="text-sm md:text-base opacity-90 mt-1">
+                            استمع وتدبر مع تلاوات متنوعة
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="flex items-center gap-4 bg-white/10 px-4 py-3 rounded-2xl backdrop-blur-sm">
+                    <div class="text-center">
+                        <div class="text-lg font-bold">١١٤</div>
+                        <div class="text-xs opacity-80">سورة</div>
+                    </div>
+                    <div class="h-8 w-px bg-white/20"></div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">٦,٢٣٦</div>
+                        <div class="text-xs opacity-80">آية</div>
+                    </div>
+                    <div class="h-8 w-px bg-white/20"></div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">٣٠</div>
+                        <div class="text-xs opacity-80">جزء</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-6xl">
+        
+        <!-- Search Section -->
+        <div class="card p-6 mb-8 glow-border">
+            <div class="max-w-4xl mx-auto">
+                <!-- Title -->
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-search text-quran-primary ml-2"></i>
+                        ابحث عن آية
+                    </h2>
+                    <p class="text-gray-600">اختر السورة والآية للاستماع والتفسير</p>
+                </div>
+                
+                <!-- Search Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                    <!-- Select Surah -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">
+                            <i class="fas fa-book-open ml-1 text-quran-primary"></i>
+                            اختر السورة
+                        </label>
+                        <div class="relative">
+                            <select 
+                                id="surahSelect"
+                                class="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-primary focus:border-quran-primary outline-none transition appearance-none bg-white smooth-transition"
+                            >
+                                <option value="">-- اختر السورة --</option>
+                                <!-- سيتم ملؤها جافاسكريبت -->
+                            </select>
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div id="surahInfo" class="mt-2 text-sm text-gray-500 hidden"></div>
+                    </div>
+                    
+                    <!-- Ayah Number in Surah -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">
+                            <i class="fas fa-hashtag ml-1 text-quran-secondary"></i>
+                            رقم الآية في السورة
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="number" 
+                                id="ayahInSurah"
+                                placeholder="رقم الآية"
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-secondary focus:border-quran-secondary outline-none transition smooth-transition"
+                                min="1"
+                            >
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-sort-numeric-up"></i>
+                            </div>
+                        </div>
+                        <div id="ayahRange" class="mt-2 text-sm text-gray-500 hidden">
+                            المدى: <span id="maxAyah">0</span> - 1
+                        </div>
+                    </div>
+                    
+                    <!-- Select Reciter -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">
+                            <i class="fas fa-user-circle ml-1 text-quran-accent"></i>
+                            اختر القارئ
+                        </label>
+                        <div class="relative">
+                            <select 
+                                id="reciterSelect"
+                                class="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-accent focus:border-quran-accent outline-none transition appearance-none bg-white smooth-transition"
+                            >
+                                <!-- سيتم ملؤها جافاسكريبت -->
+                            </select>
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Global Ayah Search (Backup) -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">
+                        <i class="fas fa-globe ml-1 text-quran-gold"></i>
+                        أو ابحث برقم الآية العام
+                    </label>
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <input 
+                                type="number" 
+                                id="globalAyah"
+                                placeholder="رقم الآية العام (1-6236)"
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-quran-gold focus:border-quran-gold outline-none transition smooth-transition"
+                                min="1"
+                                max="6236"
+                            >
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <button 
+                            onclick="searchByGlobalAyah()"
+                            class="px-5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl transition smooth-transition"
+                        >
+                            بحث
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Ayahs -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-3 font-medium">
+                        <i class="fas fa-bolt ml-1 text-red-500"></i>
+                        آيات سريعة
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <button onclick="loadQuickAyah(1, 1)" class="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition text-sm smooth-transition">
+                            <div class="font-semibold">الفاتحة</div>
+                            <div class="text-xs opacity-75">سورة ١:١</div>
+                        </button>
+                        <button onclick="loadQuickAyah(2, 255)" class="p-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl transition text-sm smooth-transition">
+                            <div class="font-semibold">آية الكرسي</div>
+                            <div class="text-xs opacity-75">البقرة:٢٥٥</div>
+                        </button>
+                        <button onclick="loadQuickAyah(24, 35)" class="p-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl transition text-sm smooth-transition">
+                            <div class="font-semibold">آية النور</div>
+                            <div class="text-xs opacity-75">النور:٣٥</div>
+                        </button>
+                        <button onclick="loadQuickAyah(9, 128)" class="p-3 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl transition text-sm smooth-transition">
+                            <div class="font-semibold">آية التوبة</div>
+                            <div class="text-xs opacity-75">التوبة:١٢٨</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search Button -->
+                <div class="text-center">
+                    <button 
+                        id="searchBtn"
+                        onclick="fetchAyahBySurah()"
+                        class="btn-primary px-8 py-3 rounded-xl font-bold text-lg w-full md:w-auto smooth-transition"
+                    >
+                        <i class="fas fa-play-circle ml-2"></i>
+                        ابحث إلى الآية
+                        <span id="searchSpinner" class="hidden ml-2">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                    <p class="text-gray-500 text-sm mt-3">
+                        <i class="fas fa-info-circle ml-1"></i>
+                        اختر السورة والآية ثم اضغط للاستماع
+                    </p>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="errorMsg" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div class="flex items-center gap-3 text-red-700">
+                        <i class="fas fa-exclamation-triangle text-lg"></i>
+                        <div>
+                            <span id="errorText" class="font-medium"></span>
+                            <p id="errorDetails" class="text-sm opacity-80 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="space-y-6 hidden results-container">
+            
+            <!-- Ayah Card -->
+            <div id="ayahCard" class="card p-6 md:p-8 slide-up">
+                <div id="ayahDisplay"></div>
+            </div>
+
+            <!-- Audio Card -->
+            <div id="audioCard" class="card bg-gradient-audio p-5 md:p-6 slide-up">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="icon-circle bg-amber-100 text-amber-600">
+                            <i class="fas fa-headphones text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-amber-900 text-lg" id="reciterName">تلاوة الشيخ</h3>
+                            <p class="text-amber-700 text-sm">استمع بتلاوة واضحة ونقية</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="playAudio()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition smooth-transition">
+                            <i class="fas fa-play ml-1"></i> تشغيل
+                        </button>
+                        <button onclick="pauseAudio()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition smooth-transition">
+                            <i class="fas fa-pause ml-1"></i> إيقاف
+                        </button>
+                    </div>
+                </div>
+                <div id="audioDisplay"></div>
+            </div>
+
+            <!-- Translation & Tafseer Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Translation Card -->
+                <div id="translationCard" class="card bg-gradient-translation p-5 md:p-6 slide-up">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="icon-circle bg-blue-100 text-blue-600">
+                            <i class="fas fa-language text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-blue-900">الترجمة الإنجليزية</h3>
+                            <p class="text-blue-700 text-sm">ترجمة معاني القرآن</p>
+                        </div>
+                    </div>
+                    <div id="translationDisplay"></div>
+                </div>
+
+                <!-- Tafseer Card -->
+                <div id="tafseerCard" class="card bg-gradient-tafseer p-5 md:p-6 slide-up">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="icon-circle bg-purple-100 text-purple-600">
+                            <i class="fas fa-book-open text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-purple-900">التفسير الميسر</h3>
+                            <p class="text-purple-700 text-sm">شرح مبسط للآية</p>
+                        </div>
+                    </div>
+                    <div id="tafseerDisplay"></div>
+                </div>
+            </div>
+
+            <!-- Share & Navigation -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Share Card -->
+                <div id="shareCard" class="card p-5 slide-up hidden">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="icon-circle bg-green-100 text-green-600">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">شارك الآية</h3>
+                                <p class="text-gray-600 text-sm">انشر الخير مع الآخرين</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="shareAyah()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition smooth-transition">
+                                <i class="fas fa-share ml-1"></i>
+                                مشاركة
+                            </button>
+                            <button onclick="copyAyah()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition smooth-transition">
+                                <i class="fas fa-copy ml-1"></i>
+                                نسخ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Card -->
+                <div id="navigationCard" class="card p-5 slide-up hidden">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="icon-circle bg-blue-100 text-blue-600">
+                                <i class="fas fa-arrow-right-arrow-left"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">تنقل بين الآيات</h3>
+                                <p class="text-gray-600 text-sm">الآية السابقة والتالية</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="previousAyah()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition smooth-transition">
+                                <i class="fas fa-arrow-right ml-1"></i>
+                                سابقة
+                            </button>
+                            <button onclick="nextAyah()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition smooth-transition">
+                                تالية
+                                <i class="fas fa-arrow-left ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden text-center py-16">
+            <div class="loading-spinner mx-auto mb-6"></div>
+            <p class="text-gray-700 font-bold text-lg mb-2">جاري تحميل الآية</p>
+            <p class="text-gray-500 animate-pulse">يرجى الانتظار قليلاً...</p>
+            <div class="mt-4 text-sm text-gray-400">
+                <i class="fas fa-sync-alt fa-spin ml-1"></i>
+                جاري الاتصال بالخادم
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <!-- دعاء -->
+                <div class="mb-6">
+                    <div class="inline-flex items-center gap-3 bg-emerald-50 px-6 py-4 rounded-2xl">
+                        <i class="fas fa-hands-praying text-emerald-600 text-xl"></i>
+                        <p class="text-emerald-700 font-medium">
+                            اللَّهُمَّ انْفَعْنِي بِمَا عَلَّمْتَنِي، وَعَلِّمْنِي مَا يَنْفَعُنِي، وَزِدْنِي عِلْمًا
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Links -->
+                <div class="flex flex-wrap justify-center gap-6 mb-6">
+                    <a href="#" class="text-gray-600 hover:text-quran-primary transition smooth-transition">
+                        <i class="fas fa-heart ml-1"></i> تبرع للموقع
+                    </a>
+                </div>
+                
+                <!-- Copyright -->
+                <div class="border-t border-gray-100 pt-6">
+                    <p class="text-gray-500 text-sm">
+                        <i class="fas fa-copyright ml-1"></i>
+                        2026 قرآن كريم. جميع الحقوق محفوظة.
+                        <br class="md:hidden">
+                        <span class="hidden md:inline"> | </span>
+                        الموقع غير ربحي، هدفه نشر القرآن الكريم
+                    </p>
+                    <p class="text-gray-400 text-xs mt-2">
+                        <i class="fas fa-code ml-1"></i>
+                        تم التطوير بحب ❤️ لخدمة كتاب الله
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    
+</body>
+</html>
