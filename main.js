@@ -214,66 +214,121 @@ function displayAyah(d) {
 }
 
 // ══════════════════════════════════════
-//  أحكام التجويد - Tajweed Coloring
+//  أحكام التجويد - تلوين محلي موثوق
+//  يعمل على نص الآية العادي بدون API خارجي
 // ══════════════════════════════════════
-const TAJWEED_COLORS = {
-    'ghunnah':           '#FF7E1E',
-    'idghaam':           '#169200',
-    'idghaam_no_ghunnah':'#026112',
-    'iqlab':             '#26BFFD',
-    'ikhfa':             '#81B622',
-    'ikhfa_shafawi':     '#D2691E',
-    'idghaam_shafawi':   '#A0522D',
-    'qalqalah':          '#DD0008',
-    'madd_normal':       '#337FFF',
-    'madd_munfasil':     '#4B0082',
-    'madd_muttasil':     '#990099',
-    'madd_lazim':        '#8B0000',
-    'madd_lin':          '#006400',
-    'hamzat_wasl':       '#AAAAAA',
-    'lam_shamsiyya':     '#AAAAAA',
-    'silent':            '#AAAAAA',
-    'tafkheem':          '#FF4500',
-    'idhar':             '#00CED1',
-    'idhar_shafawi':     '#20B2AA',
-};
 
-// ══════════════════════════════════════
-//  تحويل نص التجويد إلى HTML ملوَّن - مُصلَح
-//  API يُرجع: <tajweed class="rule_name">النص</tajweed>
-//  أحياناً class متعدد: "rule1 rule2"
-// ══════════════════════════════════════
-function parseTajweedText(raw) {
-    if (!raw) return '';
+// حروف القلقلة
+const QALQALAH_LETTERS = ['ق','ط','ب','ج','د'];
+// حروف المد
+const MADD_LETTERS = ['ا','و','ي'];
+// حروف الإطباق (تفخيم)
+const TAFKHEEM_LETTERS = ['ص','ض','ط','ظ'];
+// حروف الغنة (ن م مشددة)
+const GHUNNAH_LETTERS = ['ن','م'];
+// حروف الإظهار الحلقي
+const IDHAR_LETTERS = ['ء','ه','ع','ح','غ','خ'];
 
-    // مرور واحد فقط: استبدل <tajweed class="...">...</tajweed> بـ <span> ملوَّن
-    // نستخدم s-flag للتعامل مع حروف متعددة السطور
-    let result = raw.replace(/<tajweed class="([^"]*)">([\s\S]*?)<\/tajweed>/g,
-        (match, cls, innerText) => {
-            // cls قد يحتوي على أحكام متعددة مفصولة بمسافة، نأخذ الأول غير الرمادي
-            const classes = cls.trim().split(/\s+/);
-            let color = null;
-            let ruleName = '';
-            for (const c of classes) {
-                if (TAJWEED_COLORS[c]) {
-                    color = TAJWEED_COLORS[c];
-                    ruleName = getRuleName(c);
-                    break;
-                }
-            }
-            if (!color) {
-                // حتى الأحكام الرمادية (صامت / همزة) نعرضها بلون فاتح
-                color = '#AAAAAA';
-                ruleName = getRuleName(classes[0]);
-            }
-            return `<span class="tj-word" style="color:${color}" title="${ruleName}">${innerText}</span>`;
+function colorAyahText(text) {
+    if (!text) return text;
+    let result = '';
+    const chars = [...text]; // تقسيم صحيح للحروف العربية (Unicode)
+
+    for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        const next = chars[i + 1] || '';
+        const prev = chars[i - 1] || '';
+
+        // الحركات والتشكيل - لا تُلوَّن بمفردها
+        if (isHaraka(ch)) { result += ch; continue; }
+
+        // الشدة - تُضاف للحرف السابق
+        if (ch === 'ّ') { result += ch; continue; }
+
+        // تجميع الحرف مع تشكيله
+        let charWithDiacritics = ch;
+        let j = i + 1;
+        while (j < chars.length && (isHaraka(chars[j]) || chars[j] === 'ّ' || chars[j] === 'ْ')) {
+            charWithDiacritics += chars[j];
+            j++;
         }
-    );
 
-    // إزالة أي وسوم XML/HTML متبقية (ليست span) دون المساس بالنص العربي
-    result = result.replace(/<(?!\/?span)[^>]+>/g, '');
+        const hasSukun = charWithDiacritics.includes('ْ');
+        const hasShaddah = charWithDiacritics.includes('ّ');
+        const hasTanwin = /[\u064B\u064C\u064D]/.test(charWithDiacritics);
 
+        let color = null;
+        let title = '';
+
+        // ── قلقلة: حروف قطب جد عند السكون ──
+        if (QALQALAH_LETTERS.includes(ch) && (hasSukun || isEndOfWord(chars, j))) {
+            color = '#DD0008'; title = 'قلقلة';
+        }
+        // ── تفخيم ──
+        else if (TAFKHEEM_LETTERS.includes(ch)) {
+            color = '#FF4500'; title = 'تفخيم';
+        }
+        // ── مد: حروف المد ──
+        else if (MADD_LETTERS.includes(ch) && isMaddContext(chars, i, prev)) {
+            color = '#337FFF'; title = 'مد';
+        }
+        // ── غنة: نون أو ميم مشددة ──
+        else if (GHUNNAH_LETTERS.includes(ch) && hasShaddah) {
+            color = '#FF7E1E'; title = 'غنة';
+        }
+        // ── إخفاء: نون ساكنة أو تنوين قبل حروف الإخفاء ──
+        else if (ch === 'ن' && hasSukun && isIkhfaaNext(chars[j])) {
+            color = '#81B622'; title = 'إخفاء';
+        }
+        // ── إدغام: نون ساكنة قبل حروف يرملون ──
+        else if (ch === 'ن' && hasSukun && isIdghaamLetter(chars[j])) {
+            color = '#169200'; title = 'إدغام';
+        }
+        // ── إقلاب: نون ساكنة قبل باء ──
+        else if (ch === 'ن' && hasSukun && chars[j] === 'ب') {
+            color = '#26BFFD'; title = 'إقلاب';
+        }
+
+        if (color) {
+            result += `<span class="tj-word" style="color:${color}" title="${title}">${charWithDiacritics}</span>`;
+        } else {
+            result += charWithDiacritics;
+        }
+
+        // نقفز الحركات التي أضفناها بالفعل
+        i = j - 1;
+    }
     return result;
+}
+
+function isHaraka(ch) {
+    // الحركات والتنوين والمد القصير
+    return /[\u064B-\u065F\u0670]/.test(ch);
+}
+
+function isEndOfWord(chars, idx) {
+    // هل الحرف في نهاية كلمة (يليه مسافة أو نهاية)
+    return !chars[idx] || chars[idx] === ' ' || chars[idx] === '\n';
+}
+
+function isMaddContext(chars, i, prev) {
+    // المد إذا سبق الحرف فتحة/ضمة/كسرة مناسبة
+    if (!prev) return false;
+    const ch = chars[i];
+    if (ch === 'ا') return /[\u064E]/.test(prev); // فتحة قبل ألف
+    if (ch === 'و') return /[\u064F]/.test(prev); // ضمة قبل واو
+    if (ch === 'ي') return /[\u0650]/.test(prev); // كسرة قبل ياء
+    return false;
+}
+
+function isIkhfaaNext(ch) {
+    if (!ch) return false;
+    return 'صذثكجشقسدطزفتضظ'.includes(ch);
+}
+
+function isIdghaamLetter(ch) {
+    if (!ch) return false;
+    return 'يرملون'.includes(ch);
 }
 
 function getRuleName(ruleId) {
@@ -320,37 +375,35 @@ function toggleLegend() {
 async function loadTajweed(globalN) {
     const container = document.getElementById('tajweedCard');
     if (!container) return;
-    container.innerHTML = `
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
-            <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-d);font-size:14px;"><i class="fas fa-palette"></i></div>
-            <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">تلاوة مُلوَّنة بأحكام التجويد</div></div>
-        </div>
-        <div style="text-align:center;padding:20px;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> جاري تحميل التجويد...</div>`;
     container.style.display = 'block';
 
+    // نجلب نص الآية العادي ونلوّنه محلياً
     try {
-        const res = await fetch(`https://api.alquran.cloud/v1/ayah/${globalN}/quran-tajweed`);
+        const res = await fetch(`https://api.alquran.cloud/v1/ayah/${globalN}`);
         const data = await res.json();
-        if (data.data && data.data.text) {
-            const coloredHtml = parseTajweedText(data.data.text);
-            container.innerHTML = `
-                <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
-                    <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-d);font-size:14px;"><i class="fas fa-palette"></i></div>
-                    <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">تلاوة مُلوَّنة بأحكام التجويد</div><div style="font-size:.72rem;color:var(--muted);">مرّ على الحرف لمعرفة الحكم</div></div>
-                </div>
-                <div style="font-family:'Amiri Quran','Amiri',serif;font-size:1.6rem;line-height:2.8;text-align:center;padding:16px;background:var(--mushaf);border-radius:12px;border:1px solid var(--border);">
-                    ${coloredHtml || data.data.text}
-                </div>
-                ${renderTajweedLegend()}`;
-        }
-    } catch(e) {
-        console.error('loadTajweed error:', e);
+        if (!data.data || !data.data.text) throw new Error('no text');
+
+        const colored = colorAyahText(data.data.text);
         container.innerHTML = `
             <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
                 <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-d);font-size:14px;"><i class="fas fa-palette"></i></div>
-                <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">التجويد الملوَّن</div><div style="font-size:.72rem;color:var(--muted);">تعذّر الاتصال بـ API</div></div>
+                <div>
+                    <div style="font-weight:700;color:var(--txt);font-size:.92rem;">تلاوة مُلوَّنة بأحكام التجويد</div>
+                    <div style="font-size:.72rem;color:var(--muted);">مرّ على الحرف لمعرفة الحكم</div>
+                </div>
             </div>
-            <p style="color:var(--muted);font-size:.84rem;text-align:center;padding:8px;">تعذّر تحميل التجويد — الجدول متاح أدناه</p>
+            <div style="font-family:'Amiri Quran','Amiri',serif;font-size:1.6rem;line-height:2.8;text-align:center;padding:16px;background:var(--mushaf);border-radius:12px;border:1px solid var(--border);">
+                ${colored}
+            </div>
+            ${renderTajweedLegend()}`;
+    } catch(e) {
+        console.error('loadTajweed error:', e);
+        // إذا فشل التحميل، نلوّن النص الموجود أصلاً
+        container.innerHTML = `
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
+                <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-d);font-size:14px;"><i class="fas fa-palette"></i></div>
+                <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">دليل أحكام التجويد</div></div>
+            </div>
             ${renderTajweedLegend()}`;
     }
 }

@@ -867,8 +867,6 @@ function renderPage(pd){
       const info=surahsList.find(s=>s.number===g.sn);
       const type=info?(info.revelationType==='Meccan'?'مكية':'مدنية'):'';
       content+=`<div class="surah-sep"><div class="sep-name">${g.surah.name}</div><div class="sep-info">${type} • ${info?.numberOfAyahs||''} آية</div></div>`;
-      if(g.sn!==9&&g.sn!==1)
-        content+=`<div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
     }
     g.ayahs.forEach(a=>{
       const txt=a.text.replace(/'/g,"&apos;").replace(/"/g,"&quot;");
