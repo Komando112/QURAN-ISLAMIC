@@ -238,38 +238,42 @@ const TAJWEED_COLORS = {
     'idhar_shafawi':     '#20B2AA',
 };
 
-// تحويل نص التجويد المُرمَّز إلى HTML ملوَّن
-function parseTajweedText(tajweedText) {
-    if (!tajweedText) return '';
-    // الـ API يُرجع نصاً بتنسيق: <tajweed class="rule">text</tajweed>
-    // نحوّله إلى HTML ملوَّن
-    let html = tajweedText;
-    // استبدل وسوم tajweed بـ span ملوَّن
-    html = html.replace(/<tajweed class="([^"]+)">/g, (match, cls) => {
-        const rules = cls.split(' ');
-        const color = rules.reduce((c, r) => TAJWEED_COLORS[r] || c, null);
-        if (color) {
-            const ruleName = getRuleName(rules[0]);
-            return `<span class="tj-word" style="color:${color};" title="${ruleName}">`;
+// ══════════════════════════════════════
+//  تحويل نص التجويد إلى HTML ملوَّن - مُصلَح
+//  API يُرجع: <tajweed class="rule_name">النص</tajweed>
+//  أحياناً class متعدد: "rule1 rule2"
+// ══════════════════════════════════════
+function parseTajweedText(raw) {
+    if (!raw) return '';
+
+    // مرور واحد فقط: استبدل <tajweed class="...">...</tajweed> بـ <span> ملوَّن
+    // نستخدم s-flag للتعامل مع حروف متعددة السطور
+    let result = raw.replace(/<tajweed class="([^"]*)">([\s\S]*?)<\/tajweed>/g,
+        (match, cls, innerText) => {
+            // cls قد يحتوي على أحكام متعددة مفصولة بمسافة، نأخذ الأول غير الرمادي
+            const classes = cls.trim().split(/\s+/);
+            let color = null;
+            let ruleName = '';
+            for (const c of classes) {
+                if (TAJWEED_COLORS[c]) {
+                    color = TAJWEED_COLORS[c];
+                    ruleName = getRuleName(c);
+                    break;
+                }
+            }
+            if (!color) {
+                // حتى الأحكام الرمادية (صامت / همزة) نعرضها بلون فاتح
+                color = '#AAAAAA';
+                ruleName = getRuleName(classes[0]);
+            }
+            return `<span class="tj-word" style="color:${color}" title="${ruleName}">${innerText}</span>`;
         }
-        return '<span>';
-    });
-    html = html.replace(/<\/tajweed>/g, '</span>');
-    // إزالة الوسوم الأخرى
-    html = html.replace(/<[^>]+>/g, '');
-    // إعادة إضافة الـ spans
-    html = tajweedText.replace(/<tajweed class="([^"]+)">([\s\S]*?)<\/tajweed>/g, (match, cls, text) => {
-        const rules = cls.split(' ');
-        const color = rules.reduce((c, r) => TAJWEED_COLORS[r] || c, null);
-        const ruleName = getRuleName(rules[0]);
-        if (color) {
-            return `<span class="tj-word" style="color:${color};font-weight:500;" title="${ruleName}">${text}</span>`;
-        }
-        return text;
-    });
-    // إزالة الوسوم المتبقية (non-tajweed)
-    html = html.replace(/<(?!span|\/span)[^>]+>/g, '');
-    return html;
+    );
+
+    // إزالة أي وسوم XML/HTML متبقية (ليست span) دون المساس بالنص العربي
+    result = result.replace(/<(?!\/?span)[^>]+>/g, '');
+
+    return result;
 }
 
 function getRuleName(ruleId) {
@@ -340,12 +344,13 @@ async function loadTajweed(globalN) {
                 ${renderTajweedLegend()}`;
         }
     } catch(e) {
+        console.error('loadTajweed error:', e);
         container.innerHTML = `
             <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
                 <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-d);font-size:14px;"><i class="fas fa-palette"></i></div>
-                <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">التجويد الملوَّن</div></div>
+                <div><div style="font-weight:700;color:var(--txt);font-size:.92rem;">التجويد الملوَّن</div><div style="font-size:.72rem;color:var(--muted);">تعذّر الاتصال بـ API</div></div>
             </div>
-            <p style="color:var(--muted);font-size:.84rem;text-align:center;">تعذّر تحميل التجويد الملوَّن.</p>
+            <p style="color:var(--muted);font-size:.84rem;text-align:center;padding:8px;">تعذّر تحميل التجويد — الجدول متاح أدناه</p>
             ${renderTajweedLegend()}`;
     }
 }
