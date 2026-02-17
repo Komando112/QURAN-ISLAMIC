@@ -13,27 +13,35 @@
   <title>قرآن كريم</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- خط Noto Naskh Arabic - خط عربي احترافي وواضح -->
+  <!-- ════ خط Amiri Quran — الأشهر لطباعة المصاحف ════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <!-- مسح الكاش القديم لإجبار المتصفح على تحميل الخط الجديد -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <!-- حذف الكاش القديم + إجبار تحميل الخط الجديد -->
   <script>
-    (async function clearOldCache() {
+    const CURRENT_CACHE = 'quran-pwa-v10';
+    (async function() {
       if ('caches' in window) {
         try {
           const keys = await caches.keys();
-          for (const key of keys) {
-            if (key !== 'quran-pwa-v3') {
-              await caches.delete(key);
-              console.log('تم مسح الكاش القديم:', key);
-            }
-          }
+          await Promise.all(keys.filter(k => k !== CURRENT_CACHE).map(k => caches.delete(k)));
         } catch(e) {}
+      }
+      // إلغاء تسجيل Service Worker القديم لإجباره على التحديث
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations().catch(()=>[]);
+        for (const r of regs) await r.unregister().catch(()=>{});
       }
     })();
   </script>
+  <style>
+    /* تأكيد الخط مبكراً قبل تحميل باقي CSS */
+    * { font-family: 'Tajawal', sans-serif; }
+    .ayahs, .aod-text, .pop-txt, .sep-name, .an,
+    .surah-basmala, .pg-hdr span, .pg-ftr span, .load-txt {
+      font-family: 'Amiri Quran', serif !important;
+    }
+  </style>
   <style>
     /* ── Design Tokens ── */
     :root {
@@ -45,10 +53,9 @@
       --shadow:0 4px 24px rgba(0,0,0,.07); --shadow-lg:0 8px 40px rgba(0,0,0,.13);
       --inp:#fff; --inp-b:#d4c4a8; --popup:#fff;
       --bar:linear-gradient(135deg,#1a472a,#0d2b18); --tr:.35s cubic-bezier(.4,0,.2,1);
-      --fs:1.65rem; --lh:3;
-      /* الخط الجديد */
-      --font-quran: 'Noto Naskh Arabic', 'Traditional Arabic', serif;
-      --font-ui: 'Noto Sans Arabic', 'Tajawal', sans-serif;
+      --fs:1.75rem; --lh:3.2;
+      --font-quran: 'Amiri Quran', serif;
+      --font-ui: 'Tajawal', sans-serif;
     }
     [data-theme=dark]{
       --bg:#0e1a14; --surface:#152210; --surface2:#1c2e18; --hdr:#0a160d; --nav:#06100a;

@@ -4,7 +4,7 @@
 // =============================================
 
 // ⚠️ غيّر هذا الرقم في كل مرة تحدّث فيها الملفات
-const CACHE_NAME = 'quran-pwa-v4';
+const CACHE_NAME = 'quran-pwa-v10';
 
 const STATIC_ASSETS = [
   './',
