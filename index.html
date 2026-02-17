@@ -17,6 +17,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- مسح الكاش القديم لإجبار المتصفح على تحميل الخط الجديد -->
+  <script>
+    (async function clearOldCache() {
+      if ('caches' in window) {
+        try {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            if (key !== 'quran-pwa-v3') {
+              await caches.delete(key);
+              console.log('تم مسح الكاش القديم:', key);
+            }
+          }
+        } catch(e) {}
+      }
+    })();
+  </script>
   <style>
     /* ── Design Tokens ── */
     :root {
@@ -918,15 +935,21 @@ async function loadPage(n){
   }
 }
 
-// دالة إزالة البسملة من نص الآية
-// البسملة: بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+// دالة إزالة البسملة من نص الآية - محسّنة
 function removeBasmala(text) {
   if (!text) return text;
-  // إزالة البسملة بأشكالها المختلفة من بداية النص
+  // البسملة بأشكال التشكيل المختلفة التي قد يُرجعها API
+  // نستخدم regex أكثر مرونة يتعامل مع أي تشكيل
   return text
-    .replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*/,'')
-    .replace(/^بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\s*/,'')
-    .replace(/^بسم الله الرحمن الرحيم\s*/,'')
+    // بسملة مشكّلة كاملة (شكل everyayah API)
+    .replace(/^بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ\s*/u, '')
+    .replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*/u, '')
+    .replace(/^بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\s*/u, '')
+    .replace(/^بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ\s*/u, '')
+    // بسملة بدون تشكيل
+    .replace(/^بسم الله الرحمن الرحيم\s*/u, '')
+    // نمط عام: أي نص يبدأ بـ "بسم" أو "بِسْم"
+    .replace(/^بِ?سْ?مِ?\s*اللَّ?هِ?\s*الرَّ?حْ?مَ?[ٰا]?نِ?\s*الرَّ?حِ?يمِ?\s*/u, '')
     .trim();
 }
 
