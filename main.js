@@ -9,12 +9,13 @@ let currentGlobalAyah = null;
 // ══════════════════════════════════════
 //  متغيرات قسم السورة كاملة (استماع)
 // ══════════════════════════════════════
-let fullSurahAudioQueue = [];
+let fullSurahAudioQueue = [];      // [{ surah, ayah, text }]
 let fullSurahCurrentIndex = 0;
 let fullSurahPlaying = false;
 let fullSurahAudio = null;
 let fullSurahSelectedSurah = null;
 let fullSurahReciter = 'minshawi';
+let fullSurahData = null;          // بيانات السورة الكاملة المُجلَبة من API
 
 document.addEventListener('DOMContentLoaded', async function() {
     currentReciter = 'minshawi';
@@ -78,9 +79,7 @@ function populateSurahSelect() {
 //  تعبئة قوائم السور للأقسام الجديدة
 // ══════════════════════════════════════
 function populateFullSurahSelects() {
-    // قسم السورة كاملة - قراءة
     const readSel = document.getElementById('fullReadSurahSelect');
-    // قسم السورة كاملة - استماع
     const audioSel = document.getElementById('fullAudioSurahSelect');
     const audioRecSel = document.getElementById('fullAudioReciterSelect');
 
@@ -119,7 +118,11 @@ function populateFullSurahSelects() {
     if (audioSel) {
         audioSel.addEventListener('change', function() {
             const n = parseInt(this.value);
-            if (n) showFullSurahAudioInfo(n);
+            if (n) {
+                showFullSurahAudioInfo(n);
+                // إعادة تعيين بيانات السورة عند تغيير الاختيار
+                fullSurahData = null;
+            }
         });
     }
 }
@@ -221,8 +224,6 @@ function renderFullSurahRead(surahData, surahMeta) {
     requestAnimationFrame(() => { container.style.transition = 'opacity .4s'; container.style.opacity = '1'; });
 }
 
-let fullReadSurahData = null;
-
 async function copyFullSurah(sn) {
     try {
         const res = await fetch('https://api.alquran.cloud/v1/surah/' + sn + '/quran-uthmani');
@@ -261,6 +262,7 @@ function quickListenAyah(surah, ayah, el) {
 
 // ══════════════════════════════════════
 //  قسم السورة كاملة - استماع متتالي
+//  التعديل الرئيسي: جلب السورة كاملة أولاً
 // ══════════════════════════════════════
 function resetFullAudioPlayer() {
     if (fullSurahAudio) {
@@ -270,38 +272,113 @@ function resetFullAudioPlayer() {
     fullSurahPlaying = false;
     fullSurahCurrentIndex = 0;
     fullSurahAudioQueue = [];
+    fullSurahData = null;
     updateFullAudioPlayerUI();
 }
 
-async function startFullSurahAudio() {
+/**
+ * الدالة الرئيسية: تجلب السورة كاملة من الـ API مع نصوص جميع الآيات،
+ * ثم تبني القائمة المرئية والقائمة الصوتية معاً من بيانات واحدة.
+ */
+async function startFullSurahAudioWithList() {
     const sn = parseInt(document.getElementById('fullAudioSurahSelect')?.value);
     if (!sn) { showToast('يرجى اختيار سورة أولاً', 'warning'); return; }
+
     const s = surahsList.find(x => x.number === sn);
     if (!s) return;
 
     fullSurahSelectedSurah = s;
-    fullSurahCurrentIndex = 0;
-    fullSurahAudioQueue = [];
+    fullSurahReciter = document.getElementById('fullAudioReciterSelect')?.value || fullSurahReciter;
 
-    // بناء قائمة الآيات
-    for (let i = 1; i <= s.numberOfAyahs; i++) {
-        fullSurahAudioQueue.push({ surah: sn, ayah: i });
-    }
-
-    // تحديث واجهة المشغّل
+    // إظهار المشغل مع مؤشر التحميل
     const playerEl = document.getElementById('fullAudioPlayer');
     if (playerEl) playerEl.style.display = 'block';
 
-    updateFullAudioNowPlaying();
-    playFullSurahAyah(0);
+    const listEl = document.getElementById('fullAudioAyahList');
+    if (listEl) {
+        listEl.innerHTML = '<div style="text-align:center;padding:24px;">' +
+            '<div class="spinner" style="margin:0 auto 10px;"></div>' +
+            '<div style="color:var(--muted);font-size:.88rem;">جاري تحميل سورة ' + s.name + ' كاملة...</div>' +
+            '</div>';
+    }
+
+    const nowEl = document.getElementById('fullAudioNowPlaying');
+    if (nowEl) nowEl.innerHTML = 'جاري تحميل <span style="color:var(--gold-d);">' + s.name + '</span>...';
+
+    try {
+        // ─── جلب السورة كاملة مرة واحدة ───────────────────────────────
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 20000);
+        const res = await fetch('https://api.alquran.cloud/v1/surah/' + sn + '/quran-uthmani', { signal: ctrl.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data.data || !data.data.ayahs) throw new Error('no data');
+
+        fullSurahData = data.data; // حفظ بيانات السورة كاملة
+
+        // ─── بناء قائمة التشغيل من البيانات المُجلَبة ──────────────────
+        fullSurahAudioQueue = fullSurahData.ayahs.map(a => ({
+            surah: sn,
+            ayah: a.numberInSurah,
+            text: a.text,           // النص القرآني الكامل للآية
+            juz: a.juz,
+            page: a.page
+        }));
+
+        fullSurahCurrentIndex = 0;
+
+        // ─── بناء القائمة المرئية من نفس البيانات ───────────────────────
+        buildFullAudioAyahList(fullSurahData, sn);
+
+        // ─── بدء التشغيل ─────────────────────────────────────────────
+        playFullSurahAyah(0);
+
+    } catch (e) {
+        console.error('فشل تحميل السورة:', e);
+        if (listEl) {
+            listEl.innerHTML = '<div style="text-align:center;padding:24px;color:#ef4444;">' +
+                '<i class="fas fa-exclamation-triangle" style="font-size:1.5rem;"></i>' +
+                '<p style="margin-top:8px;">تعذر تحميل السورة، تحقق من الاتصال</p>' +
+                '<button onclick="startFullSurahAudioWithList()" style="margin-top:10px;padding:8px 18px;background:#1a472a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-ui);">إعادة المحاولة</button>' +
+                '</div>';
+        }
+        if (nowEl) nowEl.textContent = 'تعذر التحميل';
+        showToast('تعذر تحميل السورة', 'error');
+    }
+}
+
+/**
+ * بناء القائمة المرئية للآيات من بيانات السورة المُجلَبة
+ */
+function buildFullAudioAyahList(surahData, sn) {
+    const listEl = document.getElementById('fullAudioAyahList');
+    if (!listEl) return;
+
+    const isNoBasmala = sn === 9;
+    const isFatiha = sn === 1;
+
+    let html = '';
+    if (!isNoBasmala && !isFatiha) {
+        html += '<div class="full-audio-basmala">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
+    }
+
+    surahData.ayahs.forEach((a, i) => {
+        html += '<div class="full-audio-ayah-item" onclick="jumpToFullAudioAyah(' + i + ')" id="fullAudioAyah_' + i + '">';
+        html += '<span class="full-audio-ayah-num">' + toAr(a.numberInSurah) + '</span>';
+        html += '<span class="full-audio-ayah-text">' + a.text + '</span>';
+        html += '<i class="fas fa-volume-up full-audio-play-icon"></i>';
+        html += '</div>';
+    });
+
+    listEl.innerHTML = html;
 }
 
 function playFullSurahAyah(index) {
     if (index < 0 || index >= fullSurahAudioQueue.length) {
-        // انتهت السورة
         fullSurahPlaying = false;
         updateFullAudioPlayerUI();
-        showToast('انتهت تلاوة السورة', 'success');
+        showToast('انتهت تلاوة السورة 🌙', 'success');
         return;
     }
     fullSurahCurrentIndex = index;
@@ -321,9 +398,18 @@ function playFullSurahAyah(index) {
             }
         });
         fullSurahAudio.addEventListener('error', () => {
-            // محاولة المصدر التالي أو الانتقال للآية التالية
             if (fullSurahPlaying) {
-                setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 500);
+                // محاولة المصدر التالي للقارئ إن وجد
+                const reciter = QuranConfig.reciters[fullSurahReciter];
+                if (reciter && reciter.sources.length > 1) {
+                    const altUrl = reciter.sources[1](s, a);
+                    fullSurahAudio.src = altUrl;
+                    fullSurahAudio.play().catch(() => {
+                        setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 500);
+                    });
+                } else {
+                    setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 500);
+                }
             }
         });
         fullSurahAudio.addEventListener('timeupdate', updateFullAudioProgress);
@@ -367,7 +453,9 @@ function updateFullAudioNowPlaying() {
     const r = QuranConfig.reciters[fullSurahReciter];
     const nowEl = document.getElementById('fullAudioNowPlaying');
     if (nowEl) {
-        nowEl.innerHTML = '<span style="color:var(--gold-d);font-weight:700;">' + fullSurahSelectedSurah.name + '</span> — الآية ' + item.ayah + ' من ' + fullSurahAudioQueue.length;
+        nowEl.innerHTML =
+            '<span style="color:var(--gold-d);font-weight:700;">' + fullSurahSelectedSurah.name + '</span>' +
+            ' — الآية ' + item.ayah + ' من ' + fullSurahAudioQueue.length;
     }
     const recEl = document.getElementById('fullAudioReciterName');
     if (recEl && r) recEl.textContent = r.name;
@@ -414,45 +502,18 @@ function jumpToFullAudioAyah(index) {
     playFullSurahAyah(index);
 }
 
+// ── الدالتان القديمتان تبقيان للتوافق مع أي استدعاء خارجي ────────────────
+async function startFullSurahAudio() {
+    await startFullSurahAudioWithList();
+}
+
 async function loadFullSurahAudioList() {
-    const sn = parseInt(document.getElementById('fullAudioSurahSelect')?.value);
-    if (!sn) return;
-    const s = surahsList.find(x => x.number === sn);
-    if (!s) return;
-
-    const listEl = document.getElementById('fullAudioAyahList');
-    if (!listEl) return;
-    listEl.innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="margin:0 auto;"></div></div>';
-
-    try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 15000);
-        const res = await fetch('https://api.alquran.cloud/v1/surah/' + sn + '/quran-uthmani', { signal: ctrl.signal });
-        clearTimeout(t);
-        const data = await res.json();
-        if (!data.data) throw new Error('no data');
-
-        const isNoBasmala = sn === 9;
-        const isFatiha = sn === 1;
-        let html = '';
-        if (!isNoBasmala && !isFatiha) {
-            html += '<div class="full-audio-basmala">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
-        }
-        data.data.ayahs.forEach((a, i) => {
-            html += '<div class="full-audio-ayah-item" onclick="jumpToFullAudioAyah(' + i + ')" id="fullAudioAyah_' + i + '">';
-            html += '<span class="full-audio-ayah-num">' + toAr(a.numberInSurah) + '</span>';
-            html += '<span class="full-audio-ayah-text">' + a.text + '</span>';
-            html += '<i class="fas fa-volume-up full-audio-play-icon"></i>';
-            html += '</div>';
-        });
-        listEl.innerHTML = html;
-    } catch (e) {
-        listEl.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;">تعذر تحميل الآيات</p>';
-    }
+    // لم تعد مطلوبة لأن startFullSurahAudioWithList تقوم بكل شيء،
+    // لكن نبقيها فارغة حتى لا تكسر أي استدعاء موجود.
 }
 
 // ══════════════════════════════════════
-//  الكود الأصلي
+//  الكود الأصلي — بدون تغيير
 // ══════════════════════════════════════
 
 function updateSurahInfo(n) {
@@ -995,6 +1056,7 @@ window.nextAyah = nextAyah;
 window.toggleLegend = toggleLegend;
 window.loadFullSurahRead = loadFullSurahRead;
 window.startFullSurahAudio = startFullSurahAudio;
+window.startFullSurahAudioWithList = startFullSurahAudioWithList;
 window.toggleFullSurahPlay = toggleFullSurahPlay;
 window.fullSurahPrev = fullSurahPrev;
 window.fullSurahNext = fullSurahNext;
