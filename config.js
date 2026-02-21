@@ -26,6 +26,12 @@ const QuranConfig = {
         (s,a) => `https://everyayah.com/data/MaherAlMuaiqly128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
       ],
     },
+    dossari: {
+      id: "dossari", name: "ياسر الدوسري", style: "مرتل",
+      sources: [
+        (s,a) => `https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+      ],
+    },
     alafasy: {
       id: "alafasy", name: "مشاري العفاسي", style: "مرتل",
       sources: [
