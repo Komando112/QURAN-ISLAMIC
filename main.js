@@ -17,6 +17,183 @@ let fullSurahSelectedSurah = null;
 let fullSurahReciter = 'minshawi';
 let fullSurahData = null;          // بيانات السورة الكاملة المُجلَبة من API
 
+// ══════════════════════════════════════
+//  مصادر صوتية بديلة لجلب السورة كاملة
+//  (تُستخدم فقط في قسم "استماع السورة كاملة")
+// ══════════════════════════════════════
+const FULL_SURAH_AUDIO_SOURCES = {
+    alafasy: {
+        name: "مشاري العفاسي",
+        // mp3quran.net — مشاري العفاسي
+        buildUrl: (surahNum) =>
+            `https://server8.mp3quran.net/afs/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    minshawi: {
+        name: "محمد صديق المنشاوي",
+        buildUrl: (surahNum) =>
+            `https://server7.mp3quran.net/shtkfy/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Minshawy_Murattal_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    husary: {
+        name: "محمود خليل الحصري",
+        buildUrl: (surahNum) =>
+            `https://server13.mp3quran.net/husr/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Husary_128kbps_Mujawwad/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    husary_murattal: {
+        name: "محمود خليل الحصري (مرتل)",
+        buildUrl: (surahNum) =>
+            `https://server13.mp3quran.net/husr/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Husary_64kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    sudais: {
+        name: "عبدالرحمن السديس",
+        buildUrl: (surahNum) =>
+            `https://server11.mp3quran.net/sds/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    muaiqly: {
+        name: "ماهر المعيقلي",
+        buildUrl: (surahNum) =>
+            `https://server12.mp3quran.net/maher/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/MaherAlMuaiqly128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    dossari: {
+        name: "ياسر الدوسري",
+        buildUrl: (surahNum) =>
+            `https://server10.mp3quran.net/yasser/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    abdul_basit: {
+        name: "عبد الباسط عبد الصمد",
+        buildUrl: (surahNum) =>
+            `https://server7.mp3quran.net/basit/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Abdul_Basit_Murattal_192kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    albanna: {
+        name: "محمود علي البنا",
+        buildUrl: (surahNum) =>
+            `https://server10.mp3quran.net/bna/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/mahmoud_ali_al_banna_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    jibreel: {
+        name: "محمد جبريل",
+        buildUrl: (surahNum) =>
+            `https://server8.mp3quran.net/jbrl/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Muhammad_Jibreel_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    hudhaify: {
+        name: "علي الحذيفي",
+        buildUrl: (surahNum) =>
+            `https://server10.mp3quran.net/huthfi/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Hudhaify_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    tablawi: {
+        name: "محمد الطبلاوي",
+        buildUrl: (surahNum) =>
+            `https://server7.mp3quran.net/tblawi/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Mohammad_al_Tablawi_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    ghamadi: {
+        name: "سعد الغامدي",
+        buildUrl: (surahNum) =>
+            `https://server7.mp3quran.net/s_gmd/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Ghamadi_40kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    ajamy: {
+        name: "أحمد بن علي العجمي",
+        buildUrl: (surahNum) =>
+            `https://server10.mp3quran.net/ajm/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    basfar: {
+        name: "عبدالله بصفر",
+        buildUrl: (surahNum) =>
+            `https://server11.mp3quran.net/basfer/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Abdullah_Basfar_192kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    hani_rifai: {
+        name: "هاني الرفاعي",
+        buildUrl: (surahNum) =>
+            `https://server6.mp3quran.net/ryf/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Hani_Rifai_192kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    ibrahim_akhdar: {
+        name: "إبراهيم الأخضر",
+        buildUrl: (surahNum) =>
+            `https://server9.mp3quran.net/ikhdr/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Ibrahim_Akhdar_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    shuraim: {
+        name: "سعود الشريم",
+        buildUrl: (surahNum) =>
+            `https://server12.mp3quran.net/shrm/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Saood_ash-Shuraym_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    abdulbasit_mujawwad: {
+        name: "عبد الباسط عبد الصمد (مجود)",
+        buildUrl: (surahNum) =>
+            `https://server7.mp3quran.net/basit/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+    khalil_hussary: {
+        name: "محمود خليل الحصري (معلم)",
+        buildUrl: (surahNum) =>
+            `https://server13.mp3quran.net/husr/${String(surahNum).padStart(3,'0')}.mp3`,
+        buildAyahUrl: (s, a) =>
+            `https://everyayah.com/data/Husary_Muallim_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`,
+    },
+};
+
+/**
+ * بناء رابط صوت الآية لقسم "استماع السورة كاملة"
+ * يستخدم mp3quran.net بدلاً من everyayah.com
+ * إذا لم يتوفر القارئ في mp3quran يرجع إلى everyayah
+ */
+function buildFullSurahAyahUrl(reciterId, surahNum, ayahNum) {
+    const src = FULL_SURAH_AUDIO_SOURCES[reciterId];
+    if (src) {
+        return src.buildAyahUrl(surahNum, ayahNum);
+    }
+    // fallback إلى QuranConfig الأصلي
+    const r = QuranConfig.reciters[reciterId];
+    if (r) return r.sources[0](String(surahNum).padStart(3,'0'), String(ayahNum).padStart(3,'0'));
+    return null;
+}
+
+/**
+ * الرابط البديل (fallback) لقسم الاستماع الكامل — يستخدم everyayah
+ */
+function buildFullSurahAyahFallbackUrl(reciterId, surahNum, ayahNum) {
+    const r = QuranConfig.reciters[reciterId];
+    if (!r) return null;
+    // إذا كان هناك مصدر ثانٍ استخدمه كـ fallback
+    if (r.sources.length > 1) {
+        return r.sources[1](String(surahNum).padStart(3,'0'), String(ayahNum).padStart(3,'0'));
+    }
+    return r.sources[0](String(surahNum).padStart(3,'0'), String(ayahNum).padStart(3,'0'));
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     currentReciter = 'minshawi';
     await loadSurahs();
@@ -133,7 +310,6 @@ function populateFullSurahSelects() {
             const n = parseInt(this.value);
             if (n) {
                 showFullSurahAudioInfo(n);
-                // إعادة تعيين بيانات السورة عند تغيير الاختيار
                 fullSurahData = null;
             }
         });
@@ -275,7 +451,7 @@ function quickListenAyah(surah, ayah, el) {
 
 // ══════════════════════════════════════
 //  قسم السورة كاملة - استماع متتالي
-//  التعديل الرئيسي: جلب السورة كاملة أولاً
+//  المصدر: mp3quran.net (بديل عن everyayah)
 // ══════════════════════════════════════
 function resetFullAudioPlayer() {
     if (fullSurahAudio) {
@@ -292,6 +468,7 @@ function resetFullAudioPlayer() {
 /**
  * الدالة الرئيسية: تجلب السورة كاملة من الـ API مع نصوص جميع الآيات،
  * ثم تبني القائمة المرئية والقائمة الصوتية معاً من بيانات واحدة.
+ * ملاحظة: الصوت يُجلب من mp3quran.net آية آية (بديل عن everyayah.com)
  */
 async function startFullSurahAudioWithList() {
     const sn = parseInt(document.getElementById('fullAudioSurahSelect')?.value);
@@ -319,7 +496,7 @@ async function startFullSurahAudioWithList() {
     if (nowEl) nowEl.innerHTML = 'جاري تحميل <span style="color:var(--gold-d);">' + s.name + '</span>...';
 
     try {
-        // ─── جلب السورة كاملة مرة واحدة ───────────────────────────────
+        // ─── جلب نصوص الآيات من API ───────────────────────────────────
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 20000);
         const res = await fetch('https://api.alquran.cloud/v1/surah/' + sn + '/quran-uthmani', { signal: ctrl.signal });
@@ -328,20 +505,24 @@ async function startFullSurahAudioWithList() {
         const data = await res.json();
         if (!data.data || !data.data.ayahs) throw new Error('no data');
 
-        fullSurahData = data.data; // حفظ بيانات السورة كاملة
+        fullSurahData = data.data;
 
-        // ─── بناء قائمة التشغيل من البيانات المُجلَبة ──────────────────
+        // ─── بناء قائمة التشغيل — الصوت من mp3quran.net ──────────────
         fullSurahAudioQueue = fullSurahData.ayahs.map(a => ({
             surah: sn,
             ayah: a.numberInSurah,
-            text: a.text,           // النص القرآني الكامل للآية
+            text: a.text,
             juz: a.juz,
-            page: a.page
+            page: a.page,
+            // الرابط الأساسي: mp3quran.net (بديل عن everyayah)
+            audioUrl: buildFullSurahAyahUrl(fullSurahReciter, sn, a.numberInSurah),
+            // الرابط الاحتياطي: everyayah.com
+            fallbackUrl: buildFullSurahAyahFallbackUrl(fullSurahReciter, sn, a.numberInSurah),
         }));
 
         fullSurahCurrentIndex = 0;
 
-        // ─── بناء القائمة المرئية من نفس البيانات ───────────────────────
+        // ─── بناء القائمة المرئية ────────────────────────────────────
         buildFullAudioAyahList(fullSurahData, sn);
 
         // ─── بدء التشغيل ─────────────────────────────────────────────
@@ -362,7 +543,7 @@ async function startFullSurahAudioWithList() {
 }
 
 /**
- * بناء القائمة المرئية للآيات من بيانات السورة المُجلَبة
+ * بناء القائمة المرئية للآيات
  */
 function buildFullAudioAyahList(surahData, sn) {
     const listEl = document.getElementById('fullAudioAyahList');
@@ -387,8 +568,8 @@ function buildFullAudioAyahList(surahData, sn) {
     listEl.innerHTML = html;
 }
 
-// متغير لتتبع مؤشر المصدر البديل (fallback) للآية الحالية
-let _fallbackSourceIdx = 0;
+// متغير لتتبع محاولة الـ fallback
+let _fullSurahUsedFallback = false;
 
 function playFullSurahAyah(index) {
     if (index < 0 || index >= fullSurahAudioQueue.length) {
@@ -398,43 +579,42 @@ function playFullSurahAyah(index) {
         return;
     }
     fullSurahCurrentIndex = index;
-    _fallbackSourceIdx = 0;  // إعادة تعيين الـ fallback لكل آية جديدة
+    _fullSurahUsedFallback = false;
     fullSurahPlaying = true;
 
     const item = fullSurahAudioQueue[index];
-    const r = QuranConfig.reciters[fullSurahReciter] || QuranConfig.reciters['minshawi'];
-    const s = item.surah;
-    const a = item.ayah;
-    const url = r.sources[0](String(s).padStart(3,'0'), String(a).padStart(3,'0'));
 
     if (!fullSurahAudio) {
         fullSurahAudio = new Audio();
+
         fullSurahAudio.addEventListener('ended', () => {
             if (fullSurahPlaying) playFullSurahAyah(fullSurahCurrentIndex + 1);
         });
+
         fullSurahAudio.addEventListener('error', () => {
             if (!fullSurahPlaying) return;
-            // محاولة المصدر البديل التالي
-            const reciter = QuranConfig.reciters[fullSurahReciter];
-            _fallbackSourceIdx++;
-            if (reciter && _fallbackSourceIdx < reciter.sources.length) {
-                const altUrl = reciter.sources[_fallbackSourceIdx](
-                    String(s).padStart(3,'0'), String(a).padStart(3,'0')
-                );
-                fullSurahAudio.src = altUrl;
+            const currentItem = fullSurahAudioQueue[fullSurahCurrentIndex];
+            // محاولة الرابط الاحتياطي (everyayah) إذا فشل mp3quran
+            if (!_fullSurahUsedFallback && currentItem.fallbackUrl && currentItem.fallbackUrl !== currentItem.audioUrl) {
+                console.warn('[FullAudio] الرابط الأساسي فشل، جاري التحويل إلى everyayah:', currentItem.fallbackUrl);
+                _fullSurahUsedFallback = true;
+                fullSurahAudio.src = currentItem.fallbackUrl;
                 fullSurahAudio.play().catch(() => {
                     setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 600);
                 });
             } else {
-                // لا يوجد مصدر بديل — تخطّ الآية
+                // تخطّ الآية إذا فشل كلا المصدرين
+                console.warn('[FullAudio] فشل كلا المصدرين، تخطي الآية', fullSurahCurrentIndex + 1);
                 setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 600);
             }
         });
+
         fullSurahAudio.addEventListener('timeupdate', updateFullAudioProgress);
         fullSurahAudio.addEventListener('loadedmetadata', updateFullAudioProgress);
     }
 
-    fullSurahAudio.src = url;
+    // استخدام الرابط الأساسي من mp3quran.net
+    fullSurahAudio.src = item.audioUrl;
     fullSurahAudio.play().catch(() => {
         if (fullSurahPlaying) setTimeout(() => playFullSurahAyah(fullSurahCurrentIndex + 1), 800);
     });
@@ -520,14 +700,13 @@ function jumpToFullAudioAyah(index) {
     playFullSurahAyah(index);
 }
 
-// ── الدالتان القديمتان تبقيان للتوافق مع أي استدعاء خارجي ────────────────
+// ── الدالتان القديمتان للتوافق ────────────────────────────────────────
 async function startFullSurahAudio() {
     await startFullSurahAudioWithList();
 }
 
 async function loadFullSurahAudioList() {
-    // لم تعد مطلوبة لأن startFullSurahAudioWithList تقوم بكل شيء،
-    // لكن نبقيها فارغة حتى لا تكسر أي استدعاء موجود.
+    // لم تعد مطلوبة — تبقى فارغة لتجنب كسر أي استدعاء موجود
 }
 
 // ══════════════════════════════════════
@@ -564,7 +743,6 @@ function loadReciters() {
     const sel = document.getElementById('reciterSelect');
     if (!sel) return;
     sel.innerHTML = '';
-    // تجميع حسب الأسلوب
     const grouped = {};
     Object.values(QuranConfig.reciters).forEach(r => {
         const g = r.style || 'مرتل';
